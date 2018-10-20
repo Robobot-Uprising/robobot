@@ -32,6 +32,7 @@ forward_speed = 0
 side_speed = 0
 clamp_speed = 0
 clamp_sidespeed = 0
+color_speed = 0
 running = True
 
 ts1 = TouchSensor('in1') 
@@ -46,9 +47,8 @@ class MotorThread(threading.Thread):
     def run(self):
         print("Engine running!")
         while running:
-         
-                self.right_motor.run_forever(speed_sp=dc_clamp(forward_speed+side_speed))
-                self.left_motor.run_forever(speed_sp=dc_clamp(-forward_speed+side_speed))
+            self.right_motor.run_forever(speed_sp=dc_clamp(forward_speed+side_speed))
+            self.left_motor.run_forever(speed_sp=dc_clamp(-forward_speed+side_speed))
 
         self.right_motor.stop()
         self.left_motor.stop()
@@ -75,11 +75,43 @@ claw_motor_thread = clawMotorThread()
 claw_motor_thread.setDaemon(True)
 claw_motor_thread.start()
 
+class ColorThread(threading.Thread):
+   def __init__(self):
+       self.right_motor_color = ev3.LargeMotor(ev3.OUTPUT_A)
+       self.left_motor_color = ev3.LargeMotor(ev3.OUTPUT_D)
+       self.sensor = ColorSensor()
+       self.sensor.mode = 'COL-COLOR'
+       self.colors = ('unknown','black','blue','green','yellow','red','white','brown')
+       threading.Thread.__init__(self)
+
+   def run(self):
+       print("Color mode activated")
+
+       while running:
+           print(self.colors[self.sensor.value()])
+           
+           self.right_motor_color.run_forever(speed_sp=dc_clamp(color_speed))
+           self.left_motor_color.run_forever(speed_sp=dc_clamp(color_speed))
+
+       self.right_motor.stop()
+       self.left_motor.stop()
+
+
+color_thread = ColorThread()
+color_thread.setDaemon(True)
+#color_thread.start()
+
+
+colorSensor = ColorSensor()
+colorSensor.mode = 'COL-COLOR'
+colors=('unknown','black','blue','green','yellow','red','white','brown')
+
 for event in gamepad.read_loop():   
-    if event.type == 3:            
+    if event.type == 3:
         if event.code == 0:         
             forward_speed = -scale_stick(event.value)
         if event.code == 1:         
+            print(event.value)
             side_speed = -scale_stick(event.value)
         if side_speed < 100 and side_speed > -100:
             side_speed = 0
@@ -92,8 +124,15 @@ for event in gamepad.read_loop():
         if clamp_speed < 100 and forward_speed > -100:
             clamp_speed = 0
         if event.code == 5:
-            print('Manual Control Shutdown')
-            break
+            if colors[colorSensor.value()] == 'white':
+                print('Color is pressed')
+                forward_speed = 200
+            else:
+                print('it not white')
+                forward_speed = 0
+
+
+            #color_speed = -scale_stick(event.value)
 
 
     if event.type == 1 and event.code == 302 and event.value == 1:
