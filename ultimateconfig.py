@@ -125,8 +125,9 @@ for event in gamepad.read_loop():
             clamp_speed = 0
         if event.code == 5:
             if colors[colorSensor.value()] == 'white':
-                print('Color is pressed')
+                print('Color is white')
                 forward_speed = 200
+                side_speed = 0
             else:
                 print('it not white')
                 forward_speed = 0
