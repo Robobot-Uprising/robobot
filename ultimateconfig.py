@@ -30,6 +30,8 @@ gamepad = evdev.InputDevice(ps3dev)
 
 forward_speed = 0
 side_speed = 0
+clamp_speed = 0
+clamp_sidespeed = 0
 running = True
 
 ts1 = TouchSensor('in1') 
@@ -56,6 +58,23 @@ motor_thread = MotorThread()
 motor_thread.setDaemon(True)
 motor_thread.start()
 
+class clawMotorThread(threading.Thread):
+    def __init__(self):
+        self.claw_motor = ev3.MediumMotor(ev3.OUTPUT_B)
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        print("Claw Activated!")
+        while running:
+
+            self.claw_motor.run_forever(speed_sp=dc_clamp(clamp_speed+clamp_sidespeed))
+        
+        self.claw_motor.stop()
+
+claw_motor_thread = clawMotorThread()
+claw_motor_thread.setDaemon(True)
+claw_motor_thread.start()
+
 for event in gamepad.read_loop():   
     if event.type == 3:            
         if event.code == 0:         
@@ -66,9 +85,15 @@ for event in gamepad.read_loop():
             side_speed = 0
         if forward_speed < 100 and forward_speed > -100:
             forward_speed = 0
+        if event.code == 4:
+            clamp_speed = -scale_stick(event.value)
+        if event.code == 3:
+            clamp_sidespeed = -scale_stick(event.value)
+        if clamp_speed < 100 and forward_speed > -100:
+            clamp_speed = 0
         if event.code == 5:
-            print("Stopping motor thread")
-
+            print('Manual Control Shutdown')
+            break
 
 
     if event.type == 1 and event.code == 302 and event.value == 1:
@@ -76,3 +101,4 @@ for event in gamepad.read_loop():
         running = False
         time.sleep(0.5) # Wait for the motor thread to finish
         break
+
