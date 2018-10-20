@@ -5,6 +5,7 @@ from ev3dev.ev3 import *
 import ev3dev.auto as ev3
 import threading
 import time
+from evaluateLine import evaluate
 
 ## Some helpers ##
 def clamp(n, minn, maxn):
@@ -76,8 +77,8 @@ claw_motor_thread.setDaemon(True)
 claw_motor_thread.start()
 
 
-colorSensor = ColorSensor()
-colorSensor.mode = 'COL-COLOR'
+color_sensor = ColorSensor()
+color_sensor.mode = 'COL-COLOR'
 
 for event in gamepad.read_loop():   
     if event.type == 3:
@@ -97,7 +98,7 @@ for event in gamepad.read_loop():
         if clamp_speed < 100 and forward_speed > -100:
             clamp_speed = 0
         if event.code == 5:
-            forward_speed = evaluate(colorSensor)
+            forward_speed = evaluate(color_sensor)
             # if colors[colorSensor.value()] == 'white':
             #     print('Color is pressed')
             #     forward_speed = 200
