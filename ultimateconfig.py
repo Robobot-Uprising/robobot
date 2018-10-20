@@ -75,36 +75,9 @@ claw_motor_thread = clawMotorThread()
 claw_motor_thread.setDaemon(True)
 claw_motor_thread.start()
 
-class ColorThread(threading.Thread):
-   def __init__(self):
-       self.right_motor_color = ev3.LargeMotor(ev3.OUTPUT_A)
-       self.left_motor_color = ev3.LargeMotor(ev3.OUTPUT_D)
-       self.sensor = ColorSensor()
-       self.sensor.mode = 'COL-COLOR'
-       self.colors = ('unknown','black','blue','green','yellow','red','white','brown')
-       threading.Thread.__init__(self)
-
-   def run(self):
-       print("Color mode activated")
-
-       while running:
-           print(self.colors[self.sensor.value()])
-           
-           self.right_motor_color.run_forever(speed_sp=dc_clamp(color_speed))
-           self.left_motor_color.run_forever(speed_sp=dc_clamp(color_speed))
-
-       self.right_motor.stop()
-       self.left_motor.stop()
-
-
-color_thread = ColorThread()
-color_thread.setDaemon(True)
-#color_thread.start()
-
 
 colorSensor = ColorSensor()
 colorSensor.mode = 'COL-COLOR'
-colors=('unknown','black','blue','green','yellow','red','white','brown')
 
 for event in gamepad.read_loop():   
     if event.type == 3:
