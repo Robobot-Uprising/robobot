@@ -36,9 +36,6 @@ clamp_sidespeed = 0
 color_speed = 0
 running = True
 
-ts1 = TouchSensor('in1') 
-ts2 = TouchSensor('in2')
-
 class MotorThread(threading.Thread):
     def __init__(self):
         self.right_motor = ev3.LargeMotor(ev3.OUTPUT_A)
@@ -85,7 +82,6 @@ for event in gamepad.read_loop():
         if event.code == 0:         
             forward_speed = -scale_stick(event.value)
         if event.code == 1:         
-            print(event.value)
             side_speed = -scale_stick(event.value)
         if side_speed < 100 and side_speed > -100:
             side_speed = 0
@@ -107,11 +103,4 @@ for event in gamepad.read_loop():
             #     forward_speed = 0
 
             #color_speed = -scale_stick(event.value)
-
-
-    if event.type == 1 and event.code == 302 and event.value == 1:
-        print("X button is pressed. Stopping.")
-        running = False
-        time.sleep(0.5) # Wait for the motor thread to finish
-        break
 
